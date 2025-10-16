@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 public class Client {
-    private static final String Server_IP="192.168.100.70";
+    private static final String Server_IP="localhost"; //layan ip 192.168.100.70
     private static final int Server_port=9090;
  
         public static void main(String[] args) throws IOException{
@@ -61,3 +61,4 @@ public class Client {
         }
         System.exit(0);
     }}
+
