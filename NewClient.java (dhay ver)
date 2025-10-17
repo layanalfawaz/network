@@ -1,0 +1,139 @@
+package javaapplication4;
+
+import java.io.*;
+import java.net.Socket;
+import java.util.ArrayList;
+
+public class NewClient implements Runnable {
+
+    private Socket client;
+    private BufferedReader in;
+    private PrintWriter out;
+    private ArrayList<NewClient> clients;
+
+    private String userName = null;
+    private String bedType = null;    // "floor" or "normal"
+    private String chosenDate = null; // YYYY-MM-DD
+    private String chosenTime = null; // HH:MM
+
+    public NewClient(Socket c, ArrayList<NewClient> clients) throws IOException {
+        this.client = c;
+        this.clients = clients;
+        in  = new BufferedReader(new InputStreamReader(client.getInputStream()));
+        out = new PrintWriter(client.getOutputStream(), true);
+    }
+
+    @Override
+    public void run() {
+        try {
+            // ===== 1) Login/Register =====
+            out.println("Enter username:");
+            String username = in.readLine();
+
+            out.println("Enter password:");
+            String password = in.readLine();
+
+            synchronized (NewServer.usernames) {
+                int idx = NewServer.usernames.indexOf(username);
+                if (idx == -1) {
+                    NewServer.usernames.add(username);
+                    NewServer.passwords.add(password);
+                    out.println("OK,Connected");
+                } else if (NewServer.passwords.get(idx).equals(password)) {
+                    out.println("OK,Connected");
+                } else {
+                    out.println("WRONG_PASSWORD");
+                    closeQuiet();
+                    return;
+                }
+            }
+            this.userName = username;
+            while (in.ready()) { in.readLine(); }
+            out.println("Choose bed type (floor/normal):");
+            bedType = in.readLine();  // user writes "floor" or "normal"
+
+            // ===== 3) Choose date =====
+            out.println("Enter date (YYYY-MM-DD):");
+            chosenDate = in.readLine();  // e.g. 2025-10-17
+
+            // ===== 4) Choose time =====
+            out.println("Enter time (HH:MM):");
+            chosenTime = in.readLine();  // e.g. 12:00
+
+            // ===== 5) Show available rooms =====
+            out.println("AVAILABLE: " + listAvailableRooms());
+
+            // ===== 6) Ask for room name and confirm =====
+            out.println("Enter the ROOM NAME to reserve it:");
+            String roomName = in.readLine();
+
+            // Confirm reservation (Task 3)
+            String result = reserve(roomName);
+            out.println(result);
+
+            // Show same availability again (since Task 4 is removed)
+            out.println("AVAILABLE NOW: " + listAvailableRooms());
+            out.println("Reservation completed. Goodbye.");
+
+        } catch (IOException e) {
+            System.out.println("Connection closed");
+        } finally {
+            closeQuiet();
+        }
+    }
+
+    // ===== List available rooms (Task 2 helper) =====
+    private String listAvailableRooms() {
+        if (bedType == null || chosenDate == null || chosenTime == null)
+            return "Set bed/date/time first.";
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < NewServer.roomSlots.length; i++) {
+            String slot = NewServer.roomSlots[i];        // bed#Room|Date|Time
+            String[] parts = slot.split("#", 2);
+            if (parts.length < 2) continue;
+            String slotBed = parts[0];
+            String[] info  = parts[1].split("\\|");      // [room, date, time]
+            if (info.length != 3) continue;
+
+            String room = info[0], date = info[1], time = info[2];
+            if (slotBed.equals(bedType) &&
+                date.equals(chosenDate) &&
+                time.equals(chosenTime)) {
+                sb.append(room).append(' ');
+            }
+        }
+        return (sb.length() == 0) ? "No rooms available" : sb.toString().trim();
+    }
+
+    // ===== Confirm reservation only (Task 3) =====
+    private String reserve(String roomName) {
+        if (bedType == null || chosenDate == null || chosenTime == null)
+            return "ERR,SetBedDateTimeFirst";
+
+        for (int i = 0; i < NewServer.roomSlots.length; i++) {
+            String slot = NewServer.roomSlots[i];
+            String[] parts = slot.split("#", 2);
+            if (parts.length < 2) continue;
+            String slotBed = parts[0];
+            String[] info  = parts[1].split("\\|");      // [room, date, time]
+            if (info.length != 3) continue;
+
+            String room = info[0], date = info[1], time = info[2];
+            if (slotBed.equals(bedType) &&
+                room.equals(roomName) &&
+                date.equals(chosenDate) &&
+                time.equals(chosenTime)) {
+                //  confirm without updating anything
+                return "OK,ReservationDone (confirmation only)";
+            }
+        }
+        return "ERR,RoomNotFoundForThisSlot";
+    }
+
+    private void closeQuiet() {
+        try { out.close(); } catch (Exception ignore) {}
+        try { in.close(); } catch (Exception ignore) {}
+        try { client.close(); } catch (Exception ignore) {}
+    }
+}
