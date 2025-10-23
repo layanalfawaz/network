@@ -10,51 +10,26 @@ public class NewServer {
     static ArrayList<String> usernames = new ArrayList<>();
     static ArrayList<String> passwords = new ArrayList<>();
 
-    // floor (tatami) rooms and normal-bed rooms
-    static String[] floorRooms = { "Tatami-Sakura", "Tatami-Fuji", "Tatami-Koi", "Tatami-Hana", "Tatami-Tsuki" };
-    static String[] normalRooms = { "Sakura-101", "Fuji-102", "Koi-103", "Hana-104", "Tsuki-105" };
+    // 3 types — 5 rooms each 
+    static String[] standardRooms = {"Sakura-1", "Sakura-2", "Sakura-3", "Sakura-4", "Sakura-5"};
+    static String[] premiumRooms  = {"Fuji-1", "Fuji-2", "Fuji-3", "Fuji-4", "Fuji-5"};
+    static String[] suiteRooms    = {"Koi-1", "Koi-2", "Koi-3", "Koi-4", "Koi-5"};
 
-    // slots encoded as: bedType#Room|Date|Time  (bedType = floor|normal)
-    static String[] roomSlots;
-    static String[] reservedBy; // null = available, otherwise username
-
-    // quick demo options (you can edit them)
-    static String[] dates = { "2025-10-16", "2025-10-17", "2025-10-18" };
-    static String[] times = { "10:00", "11:00", "12:00", "13:00" };
+    // 7 days 
+    static String[] dates = {
+        "2025-10-16","2025-10-17","2025-10-18",
+        "2025-10-19","2025-10-20","2025-10-21","2025-10-22"
+    };
 
     public static void main(String[] args) throws IOException {
-        initSlots();
-
         ServerSocket serverSocket = new ServerSocket(9090);
         System.out.println("Server started on 9090...");
         while (true) {
             Socket client = serverSocket.accept();
-            System.out.println("Client connected");
             NewClient clientThread = new NewClient(client, clients);
             clients.add(clientThread);
             new Thread(clientThread).start();
         }
     }
-
-    static void initSlots() {
-        ArrayList<String> list = new ArrayList<>();
-        // floor rooms
-        for (int r = 0; r < floorRooms.length; r++) {
-            for (int d = 0; d < dates.length; d++) {
-                for (int t = 0; t < times.length; t++) {
-                    list.add("floor#" + floorRooms[r] + "|" + dates[d] + "|" + times[t]);
-                }
-            }
-        }
-        // normal rooms
-        for (int r = 0; r < normalRooms.length; r++) {
-            for (int d = 0; d < dates.length; d++) {
-                for (int t = 0; t < times.length; t++) {
-                    list.add("normal#" + normalRooms[r] + "|" + dates[d] + "|" + times[t]);
-                }
-            }
-        }
-        roomSlots = list.toArray(new String[0]);
-        reservedBy = new String[roomSlots.length]; // all null = available
-    }
 }
+
