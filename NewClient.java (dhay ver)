@@ -77,7 +77,7 @@ public class NewClient implements Runnable {
         }
     }
 
-    // List rooms of chosen type (no availability logic = no Task 4)
+    // List rooms of chosen type 
     private String listAvailableRooms() {
         if (roomType == null || chosenDate == null) return "";
         String[] rooms;
@@ -97,7 +97,7 @@ public class NewClient implements Runnable {
         return sb.toString().trim();
     }
 
-    // Just confirmation text; no availability update (Task 4 removed)
+    // Just confirmation text
     private String confirmReservation(String roomName) {
         if (roomType == null || chosenDate == null || roomName == null || roomName.isEmpty()) {
             return "ERR,MissingData";
