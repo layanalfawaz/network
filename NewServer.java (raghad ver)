@@ -1,0 +1,38 @@
+package server;
+
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+
+
+public class NewServer {
+    static ArrayList<NewClient> clients = new ArrayList<>();
+    //static ArrayList<Client> clientss = new ArrayList<>();
+    static ArrayList<String> usernames = new ArrayList<>();
+    static ArrayList<String> passwords = new ArrayList<>();
+
+    // 3 types — 5 rooms each 
+    static String[] standardRooms = {"Sakura-1", "Sakura-2", "Sakura-3", "Sakura-4", "Sakura-5"};
+    static String[] premiumRooms  = {"Fuji-1", "Fuji-2", "Fuji-3", "Fuji-4", "Fuji-5"};
+    static String[] suiteRooms    = {"Koi-1", "Koi-2", "Koi-3", "Koi-4", "Koi-5"};
+
+    // 7 days 
+    static String[] dates = {
+        "2025-10-16","2025-10-17","2025-10-18",
+        "2025-10-19","2025-10-20","2025-10-21","2025-10-22"
+    };
+
+  
+    public static void main(String[] args) throws IOException {
+        ServerSocket serverSocket = new ServerSocket(9090);
+        System.out.println("Server started on 9090...");
+        while (true) {
+            Socket client = serverSocket.accept();
+            NewClient clientThread = new NewClient(client, clients);
+            clients.add(clientThread);
+            new Thread(clientThread).start();
+        }
+    }
+}
