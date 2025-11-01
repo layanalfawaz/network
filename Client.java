@@ -375,23 +375,12 @@ private void setupSelectionFrame() {
             if (finalMessage != null) System.out.println(finalMessage);
 
             if (result.startsWith("OK,ReservationDone")) {
-                int choice = JOptionPane.showConfirmDialog(
-                        reservationFrame,
-                        "Reservation successful! Would you like to make another booking?",
-                        "Booking Complete",
-                        JOptionPane.YES_NO_OPTION
-                );
-
-                if (choice == JOptionPane.YES_OPTION) {
-                    reservationFrame.dispose();
-                    setupSelectionFrame();
-                } else {
-                    JOptionPane.showMessageDialog(reservationFrame, "Thank you for choosing Sakura Hotel!");
-                    System.exit(0);
-                }
+              JOptionPane.showMessageDialog(reservationFrame, "Reservation successful! Thank you for choosing Sakura Hotel!");
+                     reservationFrame.dispose(); 
+    setupLoginFrame();
             }
 
-            socket.close();
+           socket.close();
         } catch (IOException e) {
             JOptionPane.showMessageDialog(reservationFrame, "Reservation failed.");
             e.printStackTrace();
